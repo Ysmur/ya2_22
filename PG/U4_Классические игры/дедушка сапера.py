@@ -44,28 +44,6 @@ class Board:
     def on_click(self, cell):
         print(cell)
 
-    # генерацию следующего поколения (метод класса Board)
-    def next_move(self):
-        # сохраняем поле
-        tmp_board = copy.deepcopy(self.board)
-        # пересчитываем
-        for y in range(self.height):
-            for x in range(self.width):
-                # сумма окружающих клеток
-                s = 0
-                for dy in range(-1, 2):
-                    for dx in range(-1, 2):
-                        if x + dx < 0 or x + dx >= self.width or y + dy < 0 or y + dy >= self.height:
-                            continue
-                        s += self.board[y + dy][x + dx]
-                s -= self.board[y][x]
-                if s == 3:
-                    tmp_board[y][x] = 1
-                elif s < 2 or s > 3:
-                    tmp_board[y][x] = 0
-        # обновляем поле
-        self.board = copy.deepcopy(tmp_board)
-
 
 class Minesweeper(Board):
     # создание поля
@@ -79,9 +57,6 @@ class Minesweeper(Board):
         for cell in n_mines:
             self.board[cell[0]][cell[1]] = 10
 
-
-
-
     def render(self, screen):
         for y in range(self.height):
             for x in range(self.width):
@@ -89,13 +64,30 @@ class Minesweeper(Board):
                     pygame.draw.rect(screen, pygame.Color(255, 0, 0),
                                      (x * self.cell_size + self.left, y * self.cell_size + self.top,
                                       self.cell_size, self.cell_size))
+                elif self.board[y][x] != -1:
+                    font = pygame.font.Font(None, 50)
+                    text = font.render(str(self.board[y][x]), True, (100, 255, 100))
+                    screen.blit(text, (x * self.cell_size + self.left, y * self.cell_size + self.top))
                 pygame.draw.rect(screen, pygame.Color("white"), (
                     x * self.cell_size + self.left, y * self.cell_size + self.top, self.cell_size,
                     self.cell_size), 1)
 
+    def open_cell(self, cell):
+        x, y = cell
+        if self.board[y][x] == 10:
+            print('Boom!')
+        else:
+            s = 0
+            for dy in range(-1, 2):
+                for dx in range(-1, 2):
+                    if x + dx < 0 or x + dx >= self.width or y + dy < 0 or y + dy >= self.height:
+                        continue
+                    if self.board[y + dy][x + dx] == 10:
+                        s += 1
+            self.board[y][x] = s
+
     def on_click(self, cell):
-        print(cell)
-        self.board[cell[1]][cell[0]] = 1
+        self.open_cell(cell)
 
 
 def main():
@@ -115,9 +107,7 @@ def main():
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 board.get_click(event.pos)
-            # Генерируем следующее поколение по нажатию клавиши "пробел"
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                board.next_move()
+
         screen.fill((0, 0, 0))
         board.render(screen)
         pygame.display.flip()
