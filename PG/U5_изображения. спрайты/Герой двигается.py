@@ -35,8 +35,6 @@ class Hero(pygame.sprite.Sprite):
         self.rect.y = y
 
 
-
-
 def main():
     pygame.init()
     size = width, height = 501, 501
