@@ -5,17 +5,28 @@ import pygame
 
 class Hero(pygame.sprite.Sprite):
     def __init__(self, app, pos):
-        super().__init__(app.all_sprites)
+        super().__init__(app.player_group, app.all_sprites)
         self.image = app.load_image("mar.png")
         self.rect = self.image.get_rect()
         # вычисляем маску для эффективного сравнения
-        self.mask = pygame.mask.from_surface(self.image)
-        self.rect.x = pos[0]
-        self.rect.y = pos[1]
+        # self.mask = pygame.mask.from_surface(self.image)
+        self.rect = self.image.get_rect().move(app.tile_width * pos[0] + 15, app.tile_height * pos[1] + 5)
 
     def update(self, x, y):
         self.rect.x = x
         self.rect.y = y
+
+
+class Tile(pygame.sprite.Sprite):
+    def __init__(self, app, tile_type, pos_x, pos_y):
+        super().__init__(app.tiles_group, app.all_sprites)
+        tile_images = {
+            'wall': app.load_image('box.png'),
+            'empty': app.load_image('grass.png')
+        }
+        self.image = tile_images[tile_type]
+        self.rect = self.image.get_rect().move(
+            app.tile_width * pos_x, app.tile_height * pos_y)
 
 
 class App:
@@ -27,8 +38,11 @@ class App:
         pygame.display.set_caption('Mario')
         pygame.key.set_repeat(200, 70)
         self.fps = 50
+        self.tile_width = self.tile_height = 50
         self.all_sprites = pygame.sprite.Group()
-        self.hero = Hero(self, (100, 100))
+        self.tiles_group = pygame.sprite.Group()
+        self.player_group = pygame.sprite.Group()
+        self.hero = None
 
 
 
@@ -51,6 +65,32 @@ class App:
         else:
             image = image.convert_alpha()
         return image
+
+    def load_level(self, filename):
+        filename = "data/" + filename
+        # читаем уровень, убирая символы перевода строки
+        with open(filename, 'r') as mapFile:
+            level_map = [line.strip() for line in mapFile]
+
+        # и подсчитываем максимальную длину
+        max_width = max(map(len, level_map))
+
+        # дополняем каждую строку пустыми клетками ('.')
+        return list(map(lambda x: x.ljust(max_width, '.'), level_map))
+
+    def generate_level(self, level):
+        new_player, x, y = None, None, None
+        for y in range(len(level)):
+            for x in range(len(level[y])):
+                if level[y][x] == '.':
+                    Tile(self, 'empty', x, y)
+                elif level[y][x] == '#':
+                    Tile(self, 'wall', x, y)
+                elif level[y][x] == '@':
+                    Tile(self, 'empty', x, y)
+                    self.hero = Hero(self, (x, y))
+        # вернем игрока, а также размер поля в клетках
+        #return #new_player, x, y
 
     def start_screen(self):
         intro_text = ["ЗАСТАВКА", "",
@@ -83,6 +123,7 @@ class App:
 
     def run_game(self):
         run = True
+        self.generate_level(self.load_level('map1.txt'))
         while run:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -101,7 +142,9 @@ class App:
             # render
 
             self.screen.fill(pygame.Color('blue'))
-            self.all_sprites.draw(self.screen)
+            #self.all_sprites.draw(self.screen)
+            self.tiles_group.draw(self.screen)
+            self.player_group.draw(self.screen)
             pygame.display.flip()
             self.clock.tick(self.fps)
 
