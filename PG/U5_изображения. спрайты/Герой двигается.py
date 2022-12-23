@@ -31,8 +31,8 @@ class Hero(pygame.sprite.Sprite):
         self.rect.y = 0
 
     def update(self, x, y):
-        self.rect.x = x
-        self.rect.y = y
+        self.rect.x += x
+        self.rect.y += y
 
 
 def main():
@@ -54,7 +54,7 @@ def main():
             if event.type == pygame.KEYDOWN:
                 key = pygame.key.get_pressed()
                 if key[pygame.K_DOWN]:
-                    hero.update(hero.rect.x, hero.rect.y + 10)
+                    hero.update(0, 10)
 
         screen.fill((255, 255, 255))
         heros.draw(screen)

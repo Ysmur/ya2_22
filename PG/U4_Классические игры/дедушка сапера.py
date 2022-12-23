@@ -1,6 +1,4 @@
-import copy
 import random
-
 import pygame
 
 
@@ -65,7 +63,7 @@ class Minesweeper(Board):
                                      (x * self.cell_size + self.left, y * self.cell_size + self.top,
                                       self.cell_size, self.cell_size))
                 elif self.board[y][x] != -1:
-                    font = pygame.font.Font(None, 50)
+                    font = pygame.font.Font(None, self.cell_size)
                     text = font.render(str(self.board[y][x]), True, (100, 255, 100))
                     screen.blit(text, (x * self.cell_size + self.left, y * self.cell_size + self.top))
                 pygame.draw.rect(screen, pygame.Color("white"), (
@@ -98,7 +96,7 @@ def main():
     FPS = 60
 
     board = Minesweeper(5, 5, 5)
-    board.set_view(1, 1, 100)
+    board.set_view(1, 1, 20)
 
     running = True
     while running:
