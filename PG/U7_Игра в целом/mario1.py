@@ -3,6 +3,23 @@ import sys
 import pygame
 
 
+class Camera:
+    # зададим начальный сдвиг камеры
+    def __init__(self, app):
+        self.dx = 0
+        self.dy = 0
+
+    # сдвинуть объект obj на смещение камеры
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    # позиционировать камеру на объекте target
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - app.width // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - app.height // 2)
+
+
 class Hero(pygame.sprite.Sprite):
     def __init__(self, app, pos):
         super().__init__(app.player_group, app.all_sprites)
@@ -32,7 +49,7 @@ class Tile(pygame.sprite.Sprite):
 class App:
     def __init__(self):
         pygame.init()
-        self.width, self.height = 600, 600
+        self.width, self.height = 500, 500
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption('Mario')
@@ -43,6 +60,7 @@ class App:
         self.tiles_group = pygame.sprite.Group()
         self.player_group = pygame.sprite.Group()
         self.hero = None
+        self.camera = Camera(self)
 
 
 
@@ -130,13 +148,13 @@ class App:
                     self.terminate()
                 key = pygame.key.get_pressed()
                 if key[pygame.K_DOWN]:
-                    self.hero.update(self.hero.rect.x, self.hero.rect.y + 10)
+                    self.hero.update(self.hero.rect.x, self.hero.rect.y + self.tile_width)
                 if key[pygame.K_UP]:
-                    self.hero.update(self.hero.rect.x, self.hero.rect.y - 10)
+                    self.hero.update(self.hero.rect.x, self.hero.rect.y - self.tile_width)
                 if key[pygame.K_RIGHT]:
-                    self.hero.update(self.hero.rect.x + 10, self.hero.rect.y)
+                    self.hero.update(self.hero.rect.x + self.tile_width, self.hero.rect.y)
                 if key[pygame.K_LEFT]:
-                    self.hero.update(self.hero.rect.x - 10, self.hero.rect.y)
+                    self.hero.update(self.hero.rect.x - self.tile_width, self.hero.rect.y)
             # update
 
             # render
@@ -145,6 +163,9 @@ class App:
             #self.all_sprites.draw(self.screen)
             self.tiles_group.draw(self.screen)
             self.player_group.draw(self.screen)
+            self.camera.update(self.hero)
+            for sprite in self.all_sprites:
+                self.camera.apply(sprite)
             pygame.display.flip()
             self.clock.tick(self.fps)
 
