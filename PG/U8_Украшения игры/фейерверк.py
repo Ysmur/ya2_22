@@ -43,6 +43,8 @@ class App:
         pygame.display.set_caption('Mario')
         self.fps = 30
         self.all_sprites = pygame.sprite.Group()
+        pygame.mixer.init()
+        self.sound = pygame.mixer.Sound('data/danny.mp3')
 
 
     def terminate(self):
@@ -65,15 +67,29 @@ class App:
             image = image.convert_alpha()
         return image
 
+    def music(self, status):
+        print(status)
+        if status:
+            self.sound.play()
+        else:
+            self.sound.stop()
+
     def run_game(self):
         run = True
         while run:
             for event in pygame.event.get():
+                key = pygame.key.get_pressed()
                 if event.type == pygame.QUIT:
                     self.terminate()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     # создаём частицы по щелчку мыши
                     self.create_particles(pygame.mouse.get_pos())
+                if key[pygame.K_DOWN]:
+                    print('xa-xa')
+                    self.music(True)
+                if key[pygame.K_UP]:
+                    self.music(False)
+
             # update
 
             # render
